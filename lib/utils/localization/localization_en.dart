@@ -31,4 +31,10 @@ class LocalizationEN implements Localization {
 
   @override
   String get outGoingCallTitle => "Outgoing Call...";
+
+  @override
+  String get waitForJoiningLabel => 'Please wait for joining...';
+
+  @override
+  String get reConnecting => "Reconnecting...";
 }

@@ -56,4 +56,8 @@ abstract class Localization {
   String get pickUpCallTitle;
 
   String get outGoingCallTitle;
+
+  String get waitForJoiningLabel;
+
+  String get reConnecting;
 }
