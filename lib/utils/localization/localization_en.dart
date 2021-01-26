@@ -2,7 +2,7 @@ import 'localization.dart';
 
 class LocalizationEN implements Localization {
   @override
-  String get appName => "Rickshaw";
+  String get appName => "Agora VideoCall";
 
   @override
   String get internetNotConnected => "Please check your internet connection";
@@ -25,4 +25,10 @@ class LocalizationEN implements Localization {
 
   @override
   String get ok => "Ok";
+
+  @override
+  String get pickUpCallTitle => "Incoming Call...";
+
+  @override
+  String get outGoingCallTitle => "Outgoing Call...";
 }

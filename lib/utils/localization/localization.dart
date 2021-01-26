@@ -46,7 +46,14 @@ abstract class Localization {
   String get alertPermissionNotRestricted;
 
   String get ok;
+
   String get yes;
+
   String get cancel;
+
   String get no;
+
+  String get pickUpCallTitle;
+
+  String get outGoingCallTitle;
 }

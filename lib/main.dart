@@ -1,4 +1,10 @@
+import 'package:agoravideocall/utils/color_utils.dart';
+import 'package:agoravideocall/utils/common_methods.dart';
+import 'package:agoravideocall/utils/navigation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+
+import 'utils/localization/localization.dart';
 
 void main() {
   runApp(AgoraVideoCall());
@@ -7,59 +13,46 @@ void main() {
 class AgoraVideoCall extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
+    SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
+      statusBarColor: ColorUtils.transparentColor,
+      statusBarIconBrightness: Brightness.dark,
+    ));
     return MaterialApp(
-      title: 'Agora Video Call',
+      debugShowCheckedModeBanner: false,
+      title: 'Agora VideoCall',
       theme: ThemeData(
-        primarySwatch: Colors.blue,
-        visualDensity: VisualDensity.adaptivePlatformDensity,
-      ),
-      home: MyHomePage(title: 'Flutter Demo Home Page'),
-    );
-  }
-}
-
-class MyHomePage extends StatefulWidget {
-  MyHomePage({Key key, this.title}) : super(key: key);
-  final String title;
-
-  @override
-  _MyHomePageState createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-
-  void _incrementCounter() {
-    setState(() {
-      _counter++;
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.title),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Text(
-              'You have pushed the button this many times:',
-            ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headline4,
-            ),
-          ],
+        bottomSheetTheme: BottomSheetThemeData(
+          modalBackgroundColor: ColorUtils.transparentColor,
         ),
+        primaryColor: ColorUtils.primaryColor,
+        accentColor: Colors.white,
+        fontFamily: 'Asap',
+        pageTransitionsTheme: PageTransitionsTheme(builders: {
+          TargetPlatform.android: CupertinoPageTransitionsBuilder(),
+          TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
+        }),
+        scaffoldBackgroundColor: ColorUtils.whiteColor,
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
+      builder: (context, child) {
+        return MediaQuery(
+          child: child,
+          data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0),
+        );
+      },
+      home: navigationToNextScreen(),
+      onGenerateRoute: NavigationUtils.generateRoute,
+      localizationsDelegates: [
+        const MyLocalizationsDelegate(),
+        DefaultMaterialLocalizations.delegate,
+        DefaultWidgetsLocalizations.delegate,
+      ],
+      supportedLocales: [
+        const Locale('en', ''),
+      ],
     );
   }
 }
