@@ -42,13 +42,8 @@ void getScreenSize(BuildContext context) {
 }
 
 // Image Size Constant
-const imageSTiny = 20.0;
-const imageXTiny = 15.0;
-const imageTiny = 25.0;
 const imageMTiny = 35.0;
-const imageSmall = 45.0;
-const imageMSmall = 60.0;
-const imageMedium = 80.0;
-const imageLarge = 100.0;
 const imageXLarge = 170.0;
-const icCameraSize = 29.0;
+
+//Icon Size Constant
+const smallIconSize = 20.0;
