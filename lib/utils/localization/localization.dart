@@ -60,4 +60,10 @@ abstract class Localization {
   String get waitForJoiningLabel;
 
   String get reConnecting;
+
+  String get labelEndCall;
+
+  String get labelEndCallCancel;
+
+  String get labelEndCallNow;
 }

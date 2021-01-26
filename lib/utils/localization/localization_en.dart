@@ -37,4 +37,13 @@ class LocalizationEN implements Localization {
 
   @override
   String get reConnecting => "Reconnecting...";
+
+  @override
+  String get labelEndCall => "Are you sure you want to end your call?";
+
+  @override
+  String get labelEndCallCancel => "No cancel & return to call";
+
+  @override
+  String get labelEndCallNow => "Yes end call now";
 }
