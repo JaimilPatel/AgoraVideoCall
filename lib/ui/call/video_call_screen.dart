@@ -8,6 +8,8 @@ import 'package:agoravideocall/utils/constants/app_constants.dart';
 import 'package:agoravideocall/utils/constants/file_constants.dart';
 import 'package:agoravideocall/utils/dimens.dart';
 import 'package:agoravideocall/utils/localization/localization.dart';
+import 'package:agoravideocall/utils/navigation.dart';
+import 'package:agoravideocall/utils/widgets/leave_dialog.dart';
 import 'package:agoravideocall/utils/widgets/timer_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -31,7 +33,7 @@ class _VideoCallingScreenState extends State<VideoCallingScreen> {
   final _infoStrings = <String>[];
   RtcEngine _engine;
   bool isCountDownVisible = false;
-  bool isFront = true;
+  bool isFront = false;
   bool reConnectingRemoteView = false;
   final GlobalKey<TimerViewState> _timerKey = GlobalKey();
   bool mutedAudio = false;
@@ -297,26 +299,26 @@ class _VideoCallingScreenState extends State<VideoCallingScreen> {
               onPressed: _onToggleCamera,
               child: Icon(
                 isFront ? Icons.camera_front : Icons.camera_rear,
-                color: Colors.white,
+                color: ColorUtils.whiteColor,
                 size: smallIconSize,
               ),
               shape: CircleBorder(),
               elevation: 2.0,
               fillColor:
-                  isFront ? Colors.transparent : Colors.white.withAlpha(100),
+                  isFront ? Colors.white.withAlpha(100) : Colors.transparent,
               padding: const EdgeInsets.all(spacingMedium),
             ),
             RawMaterialButton(
               onPressed: _onToggleMuteVideo,
               child: Icon(
                 mutedVideo ? Icons.videocam_off : Icons.videocam,
-                color: Colors.white,
+                color: ColorUtils.whiteColor,
                 size: smallIconSize,
               ),
               shape: CircleBorder(),
               elevation: 2.0,
               fillColor:
-                  mutedVideo ? Colors.transparent : Colors.white.withAlpha(100),
+                  mutedVideo ? Colors.white.withAlpha(100) : Colors.transparent,
               padding: const EdgeInsets.all(spacingMedium),
             ),
             RawMaterialButton(
@@ -329,7 +331,7 @@ class _VideoCallingScreenState extends State<VideoCallingScreen> {
               shape: CircleBorder(),
               elevation: 2.0,
               fillColor:
-                  mutedAudio ? Colors.transparent : Colors.white.withAlpha(100),
+                  mutedAudio ? Colors.white.withAlpha(100) : Colors.transparent,
               padding: const EdgeInsets.all(spacingMedium),
             ),
           ],
@@ -342,7 +344,15 @@ class _VideoCallingScreenState extends State<VideoCallingScreen> {
           padding:
               const EdgeInsets.only(top: spacingXXXLarge, right: spacingXLarge),
           child: InkWell(
-            onTap: () {},
+            onTap: () {
+              showCallLeaveDialog(
+                  context,
+                  Localization.of(context).labelEndCall,
+                  Localization.of(context).labelEndCallNow,
+                  Localization.of(context).labelEndCallCancel, () {
+                _onCallEnd(context);
+              });
+            },
             child: Icon(
               Icons.cancel,
               color: ColorUtils.whiteColor,
@@ -351,4 +361,9 @@ class _VideoCallingScreenState extends State<VideoCallingScreen> {
           ),
         ),
       );
+
+  void _onCallEnd(BuildContext context) async {
+    Wakelock.disable();
+    NavigationUtils.pop(context);
+  }
 }
