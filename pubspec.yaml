@@ -19,6 +19,7 @@ dependencies:
   flutter_ringtone_player: ^2.0.0
   wakelock: ^0.1.4+1
   socket_io_client: ^0.9.12
+  uuid: ^2.2.1
 
 dev_dependencies:
   flutter_test:

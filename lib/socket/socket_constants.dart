@@ -9,13 +9,11 @@ class SocketConstants {
   static const String onSocketError = "onSocketError";
 
   //Video Call  events
-  static const String emitJoinRoom = "emitJoinRoom";
-  static const String onUserRequest = "onUserRequest";
-  static const String onUserJoin = "onUserJoin";
-  static const String emitCancelCall = "emitCancelCall";
-  static const String onCancelCall = "onCancelCall";
-  static const String emitGuideAccept = "emitGuideAccept";
-  static const String onGuideAccept = "onGuideAccept";
-  static const String onHotLinkConnectionFail = "onHotLinkConnectionFail";
+  static const String connectCall = "connectCall";
+  static const String onCallRequest = "onCallRequest";
+  static const String acceptCall = "acceptCall";
+  static const String onAcceptCall = "onAcceptCall";
+  static const String rejectCall = "rejectCall";
+  static const String onRejectCall = "onRejectCall";
 
 }

@@ -1,9 +1,10 @@
 import 'package:agoravideocall/ui/call/video_call_screen.dart';
+import 'package:agoravideocall/ui/common/common_screen.dart';
 import 'package:flutter/material.dart';
 
 //Common Methods For Navigation From Splash To Home Screen
 Widget navigationToNextScreen() {
-  return VideoCallingScreen(isForOutGoing: true);
+  return CommonScreen();
 }
 
 String getFormatDuration(Duration duration) {

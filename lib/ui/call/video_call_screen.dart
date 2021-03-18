@@ -3,9 +3,15 @@ import 'dart:async';
 import 'package:agora_rtc_engine/rtc_engine.dart';
 import 'package:agora_rtc_engine/rtc_local_view.dart' as rtc_local_view;
 import 'package:agora_rtc_engine/rtc_remote_view.dart' as rtc_remote_view;
+import 'package:agoravideocall/socket/model/res_call_accept_model.dart';
+import 'package:agoravideocall/socket/model/res_call_request_model.dart';
+import 'package:agoravideocall/socket/socket_constants.dart';
+import 'package:agoravideocall/socket/socket_manager.dart';
 import 'package:agoravideocall/utils/color_utils.dart';
 import 'package:agoravideocall/utils/constants/app_constants.dart';
+import 'package:agoravideocall/utils/constants/arg_constants.dart';
 import 'package:agoravideocall/utils/constants/file_constants.dart';
+import 'package:agoravideocall/utils/constants/route_constants.dart';
 import 'package:agoravideocall/utils/dimens.dart';
 import 'package:agoravideocall/utils/localization/localization.dart';
 import 'package:agoravideocall/utils/navigation.dart';
@@ -18,9 +24,16 @@ import 'package:wakelock/wakelock.dart';
 class VideoCallingScreen extends StatefulWidget {
   final String channelName;
   final String token;
+  final ResCallRequestModel resCallRequestModel;
+  final ResCallAcceptModel resCallAcceptModel;
   final bool isForOutGoing;
 
-  VideoCallingScreen({this.channelName, this.token, this.isForOutGoing});
+  VideoCallingScreen(
+      {this.channelName,
+        this.token,
+        this.resCallRequestModel,
+        this.resCallAcceptModel,
+        this.isForOutGoing});
 
   @override
   _VideoCallingScreenState createState() => _VideoCallingScreenState();
@@ -364,6 +377,15 @@ class _VideoCallingScreenState extends State<VideoCallingScreen> {
 
   void _onCallEnd(BuildContext context) async {
     Wakelock.disable();
-    NavigationUtils.pop(context);
+      emit(
+          SocketConstants.rejectCall,
+          ({
+            ArgParams.connectId:  widget.isForOutGoing
+                ? widget.resCallAcceptModel.id
+                : widget.resCallRequestModel.id,
+          }));
+      NavigationUtils.pushAndRemoveUntil(
+          context, RouteConstants.routeCommon,
+       );
   }
 }

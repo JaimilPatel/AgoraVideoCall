@@ -2,23 +2,27 @@ import 'dart:convert';
 
 import 'package:agoravideocall/utils/console_log_utils.dart';
 import 'package:agoravideocall/utils/constants/api_constants.dart';
+import 'package:agoravideocall/utils/constants/arg_constants.dart';
+import 'package:agoravideocall/utils/constants/route_constants.dart';
+import 'package:agoravideocall/utils/navigation.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:socket_io_client/socket_io_client.dart' as io;
 
-import 'model/res_user_join_model.dart';
+import 'model/res_call_accept_model.dart';
+import 'model/res_call_request_model.dart';
 import 'socket_constants.dart';
 
 io.Socket _socketInstance;
 BuildContext buildContext;
 String channelName;
 String channelToken;
-ResUserJoinModel resUserJoinModel;
+ResCallAcceptModel resCallAcceptModel;
 
 dynamic initSocketManager(BuildContext context) {
   buildContext = context;
   if (_socketInstance != null) return;
   _socketInstance = io.io(
-    "${ApiConstants.socketUrl}?${ApiConstants.socketAuthorization}=token",
+    "${ApiConstants.socketUrl}",
     <String, dynamic>{
       ApiConstants.transportsHeader: [
         ApiConstants.webSocketOption,
@@ -45,12 +49,10 @@ dynamic socketGlobalListeners() {
   _socketInstance?.on(SocketConstants.eventDisconnect, onDisconnect);
   _socketInstance?.on(SocketConstants.onSocketError, onConnectError);
   _socketInstance?.on(SocketConstants.eventConnectTimeout, onConnectError);
-  _socketInstance?.on(SocketConstants.onUserRequest, handleRequestUserData);
-  _socketInstance?.on(SocketConstants.onUserJoin, handleJoinUserData);
-  _socketInstance?.on(SocketConstants.onCancelCall, handleOnCancelCall);
-  _socketInstance?.on(SocketConstants.onGuideAccept, handleOnGuideAccept);
-  _socketInstance?.on(
-      SocketConstants.onHotLinkConnectionFail, handleHotLinkConnectionFail);
+  _socketInstance?.on(SocketConstants.onCallRequest, handleOnCallRequest);
+  _socketInstance?.on(SocketConstants.onCallRequest, handleOnCallRequest);
+  _socketInstance?.on(SocketConstants.onAcceptCall, handleOnAcceptCall);
+  _socketInstance?.on(SocketConstants.onRejectCall, handleOnRejectCall);
 }
 
 dynamic deInitialize() {
@@ -92,23 +94,51 @@ dynamic onConnectError(error) {
       "===> ConnectError socket.................... $error");
 }
 
-void handleRequestUserData(dynamic response) {
-  ConsoleLogUtils.printLog("===> handleRequestUserData....................");
+void handleOnCallConnect(dynamic response) async {
+  ConsoleLogUtils.printLog("===> handleOnCallConnect....................");
+  if (response != null) {
+    final data = ResCallAcceptModel.fromJson(response);
+    resCallAcceptModel = data;
+    channelName = data.channel;
+    channelToken = data.token;
+    NavigationUtils.push(buildContext, RouteConstants.routePickUpScreen,
+        arguments: {
+          ArgParams.resCallAcceptModel: data,
+          ArgParams.resCallRequestModel: ResCallRequestModel(),
+          ArgParams.isForOutGoing: true,
+        });
+  }
 }
 
-void handleJoinUserData(dynamic response) async {
-  ConsoleLogUtils.printLog("===> handleJoinUserData....................");
+void handleOnCallRequest(dynamic response) {
+  ConsoleLogUtils.printLog("===> handleOnCallRequest....................");
+  if (response != null) {
+    final data = ResCallRequestModel.fromJson(response);
+    NavigationUtils.push(buildContext, RouteConstants.routePickUpScreen,
+        arguments: {
+          ArgParams.resCallAcceptModel: ResCallAcceptModel(),
+          ArgParams.resCallRequestModel: data,
+          ArgParams.isForOutGoing: false,
+        });
+  }
 }
 
-void handleHotLinkConnectionFail(dynamic response) {
-  ConsoleLogUtils.printLog(
-      "===> handleHotLinkConnectionFail....................");
+void handleOnAcceptCall(dynamic response) async {
+  ConsoleLogUtils.printLog("===> handleOnAcceptCall....................");
+  NavigationUtils.pushReplacement(buildContext, RouteConstants.routeVideoCall,
+      arguments: {
+        ArgParams.channelKey: channelName,
+        ArgParams.channelTokenKey: channelToken,
+        ArgParams.resCallAcceptModel: resCallAcceptModel,
+        ArgParams.resCallRequestModel: ResCallRequestModel(),
+        ArgParams.isForOutGoing: true,
+      });
 }
 
-void handleOnGuideAccept(dynamic response) {
-  ConsoleLogUtils.printLog("===> handleOnGuideAccept....................");
-}
-
-void handleOnCancelCall(dynamic response) async {
-  ConsoleLogUtils.printLog("===> handleOnCancelCall....................");
+void handleOnRejectCall(dynamic response) {
+  ConsoleLogUtils.printLog("===> handleOnRejectCall....................");
+  NavigationUtils.pushAndRemoveUntil(
+    buildContext,
+    RouteConstants.routeCommon,
+  );
 }

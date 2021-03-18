@@ -1,8 +1,14 @@
 import 'dart:async';
 
+import 'package:agoravideocall/socket/model/res_call_accept_model.dart';
+import 'package:agoravideocall/socket/model/res_call_request_model.dart';
+import 'package:agoravideocall/socket/socket_constants.dart';
+import 'package:agoravideocall/socket/socket_manager.dart';
 import 'package:agoravideocall/utils/check_network_connectivity.dart';
 import 'package:agoravideocall/utils/color_utils.dart';
+import 'package:agoravideocall/utils/constants/arg_constants.dart';
 import 'package:agoravideocall/utils/constants/file_constants.dart';
+import 'package:agoravideocall/utils/constants/route_constants.dart';
 import 'package:agoravideocall/utils/dimens.dart';
 import 'package:agoravideocall/utils/localization/localization.dart';
 import 'package:agoravideocall/utils/navigation.dart';
@@ -15,8 +21,12 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:wakelock/wakelock.dart';
 
 class PickUpScreen extends StatefulWidget {
+  final ResCallRequestModel resCallRequestModel;
+  final ResCallAcceptModel resCallAcceptModel;
   final bool isForOutGoing;
-  PickUpScreen({this.isForOutGoing = false});
+  PickUpScreen({this.resCallRequestModel,
+    this.resCallAcceptModel,
+    this.isForOutGoing = false});
   @override
   _PickUpScreenState createState() => _PickUpScreenState();
 }
@@ -139,13 +149,37 @@ class _PickUpScreenState extends State<PickUpScreen> {
         [PermissionGroup.camera, PermissionGroup.microphone], context,
         isOpenSettings: true, permissionGrant: () async {
       FlutterRingtonePlayer.stop();
-      if (await checkNetworkConnection(context)) {}
+      if (await checkNetworkConnection(context)) {
+        emit(
+            SocketConstants.acceptCall,
+            ({
+              ArgParams.connectId: widget.resCallRequestModel.id,
+              ArgParams.channelKey: widget.resCallRequestModel.channel,
+              ArgParams.channelTokenKey: widget.resCallRequestModel.token,
+            }));
+        NavigationUtils.pushReplacement(
+            context, RouteConstants.routeVideoCall,
+            arguments: {
+              ArgParams.channelKey: widget.resCallRequestModel.channel,
+              ArgParams.channelTokenKey: widget.resCallRequestModel.token,
+              ArgParams.resCallRequestModel: widget.resCallRequestModel,
+              ArgParams.resCallAcceptModel: ResCallAcceptModel(),
+              ArgParams.isForOutGoing: widget.isForOutGoing,
+            });
+      }
     });
   }
 
   _endCall() async {
     Wakelock.disable();
     FlutterRingtonePlayer.stop();
+    emit(
+        SocketConstants.rejectCall,
+        ({
+          ArgParams.connectId:  widget.isForOutGoing
+              ? widget.resCallAcceptModel.id
+              : widget.resCallRequestModel.id,
+        }));
     NavigationUtils.pop(context);
   }
 }
