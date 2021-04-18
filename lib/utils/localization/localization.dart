@@ -66,4 +66,10 @@ abstract class Localization {
   String get labelEndCallCancel;
 
   String get labelEndCallNow;
+
+  String get appBarLabel;
+
+  String get primaryBtnLabel;
+
+  String get pickupScreenUserName;
 }

@@ -24,9 +24,10 @@ class PickUpScreen extends StatefulWidget {
   final ResCallRequestModel resCallRequestModel;
   final ResCallAcceptModel resCallAcceptModel;
   final bool isForOutGoing;
-  PickUpScreen({this.resCallRequestModel,
-    this.resCallAcceptModel,
-    this.isForOutGoing = false});
+  PickUpScreen(
+      {this.resCallRequestModel,
+      this.resCallAcceptModel,
+      this.isForOutGoing = false});
   @override
   _PickUpScreenState createState() => _PickUpScreenState();
 }
@@ -37,7 +38,8 @@ class _PickUpScreenState extends State<PickUpScreen> {
   @override
   void initState() {
     super.initState();
-    Wakelock.enable();
+    Wakelock.enable(); // Turn on wakelock feature till call is running
+    //To Play Ringtone
     FlutterRingtonePlayer.play(
         android: AndroidSounds.ringtone,
         ios: IosSounds.electronic,
@@ -49,6 +51,7 @@ class _PickUpScreenState extends State<PickUpScreen> {
 
   @override
   void dispose() {
+    //To Stop Ringtone
     FlutterRingtonePlayer.stop();
     _timer?.cancel();
     super.dispose();
@@ -83,7 +86,7 @@ class _PickUpScreenState extends State<PickUpScreen> {
             SizedBox(height: spacingXXXSLarge),
             _getImageUrlWidget(),
             SizedBox(height: spacingLarge),
-            Text("Jaimil Patel",
+            Text(Localization.of(context).pickupScreenUserName,
                 style: TextStyle(
                     color: ColorUtils.whiteColor,
                     fontSize: headerTitleSize,
@@ -104,6 +107,7 @@ class _PickUpScreenState extends State<PickUpScreen> {
     );
   }
 
+  //To Display Profile Image Of User
   _getImageUrlWidget() => ClipOval(
           child: CircleAvatar(
         backgroundColor: ColorUtils.whiteColor,
@@ -123,11 +127,12 @@ class _PickUpScreenState extends State<PickUpScreen> {
                 ),
             errorWidget: (context, url, error) => SvgPicture.asset(
                   FileConstants.icUserPlaceholder,
-                  color: ColorUtils.primaryColor.withAlpha(125),
+                  color: ColorUtils.primaryColor.withAlpha(150),
                 ),
-            imageUrl: ""),
+            imageUrl: ""), // Any ImageUrl
       ));
 
+  //Reusable Accept & Reject Call Ui/Ux
   _callingButtonWidget(BuildContext context, bool isCall) => RawMaterialButton(
       onPressed: () {
         if (isCall) {
@@ -144,12 +149,14 @@ class _PickUpScreenState extends State<PickUpScreen> {
       fillColor: isCall ? Colors.green : Colors.redAccent,
       padding: const EdgeInsets.all(spacingMedium));
 
+  //Call This Method When User Pressed On Accept Call Button
   void pickUpCallPressed(BuildContext context) {
     PermissionUtils.requestPermission(
         [PermissionGroup.camera, PermissionGroup.microphone], context,
         isOpenSettings: true, permissionGrant: () async {
       FlutterRingtonePlayer.stop();
       if (await checkNetworkConnection(context)) {
+        //Emit Accept Call Event Into Socket
         emit(
             SocketConstants.acceptCall,
             ({
@@ -157,8 +164,7 @@ class _PickUpScreenState extends State<PickUpScreen> {
               ArgParams.channelKey: widget.resCallRequestModel.channel,
               ArgParams.channelTokenKey: widget.resCallRequestModel.token,
             }));
-        NavigationUtils.pushReplacement(
-            context, RouteConstants.routeVideoCall,
+        NavigationUtils.pushReplacement(context, RouteConstants.routeVideoCall,
             arguments: {
               ArgParams.channelKey: widget.resCallRequestModel.channel,
               ArgParams.channelTokenKey: widget.resCallRequestModel.token,
@@ -170,14 +176,16 @@ class _PickUpScreenState extends State<PickUpScreen> {
     });
   }
 
+  //Call This Method When User Pressed On Reject Call Button
   _endCall() async {
-    Wakelock.disable();
-    FlutterRingtonePlayer.stop();
+    Wakelock.disable(); // Turn off wakelock feature after call end
+    FlutterRingtonePlayer.stop(); // To Stop Ringtone
+    //Emit Reject Call Event Into Socket
     emit(
         SocketConstants.rejectCall,
         ({
-          ArgParams.connectId:  widget.isForOutGoing
-              ? widget.resCallAcceptModel.id
+          ArgParams.connectId: widget.isForOutGoing
+              ? widget.resCallAcceptModel.otherUserId
               : widget.resCallRequestModel.id,
         }));
     NavigationUtils.pop(context);

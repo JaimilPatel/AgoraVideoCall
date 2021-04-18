@@ -46,4 +46,13 @@ class LocalizationEN implements Localization {
 
   @override
   String get labelEndCallNow => "Yes end call now";
+
+  @override
+  String get appBarLabel => "Video Calling Using Agora";
+
+  @override
+  String get primaryBtnLabel => "Video Call To Student / Teacher";
+
+  @override
+  String get pickupScreenUserName => "Student / Teacher";
 }

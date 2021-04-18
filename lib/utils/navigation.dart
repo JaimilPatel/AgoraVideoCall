@@ -71,8 +71,4 @@ class NavigationUtils {
         routeName, (route) => false,
         arguments: arguments);
   }
-
-  static void popUntil(BuildContext context, String routeName) {
-    Navigator.of(context).popUntil((route) => route.isFirst);
-  }
 }

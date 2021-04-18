@@ -8,6 +8,7 @@ import 'package:flutter/services.dart';
 import 'dialog_utils.dart';
 import 'localization/localization.dart';
 
+//Check Connectivity With Network
 final Connectivity _connectivity = Connectivity();
 String _connectionStatus;
 Future<bool> checkNetworkConnection(BuildContext context) async {

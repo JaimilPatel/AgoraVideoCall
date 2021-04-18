@@ -55,7 +55,7 @@ class _LeaveDialogState extends State<LeaveDialog> {
                         Text(
                           widget.title,
                           style: TextStyle(
-                              color: ColorUtils.accentColor,
+                              color: ColorUtils.primaryColor,
                               fontSize: buttonLabelFontSize),
                           textAlign: TextAlign.center,
                         ),

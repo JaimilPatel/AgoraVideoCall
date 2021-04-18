@@ -9,17 +9,17 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  cupertino_icons: ^1.0.0
-  agora_rtc_engine: ^3.2.1
+  cupertino_icons: ^1.0.2
+  agora_rtc_engine: ^3.3.3
   permission_handler: ^4.3.0
-  intl: ^0.16.1
-  cached_network_image: ^2.5.0
-  flutter_svg: ^0.18.0
-  connectivity: ^2.0.2
-  flutter_ringtone_player: ^2.0.0
-  wakelock: ^0.1.4+1
+  intl: ^0.17.0
+  cached_network_image: ^3.0.0
+  flutter_svg: ^0.21.0+1
+  connectivity: ^3.0.3
+  flutter_ringtone_player: ^3.0.0
+  wakelock: ^0.5.1
   socket_io_client: ^0.9.12
-  uuid: ^2.2.1
+  uuid: ^3.0.4
 
 dev_dependencies:
   flutter_test:

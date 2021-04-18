@@ -14,29 +14,22 @@ const spacingXXLarge = 30.0;
 const spacingXXMLarge = 35.0;
 const spacingXXXLarge = 40.0;
 const spacingXXXSLarge = 50.0;
-const spacingXXXMLarge = 60.0;
 const spacingXXXXLarge = 75.0;
 
 // Font Size Constant
-const smallLabelFontSize = 12.0;
 const labelFontSize = 14.0;
-const headerTitleSizeSmall = 21.0;
 const headerTitleSize = 24.0;
-const descriptionFontSize = 16.0;
 const buttonLabelFontSize = 18.0;
-const fontSizeDescription = 16.0;
-const fontSizeTitle = 30.0;
 const tabBarTitle = 15.0;
 
-// Font Weight Constant
-const fontWeightExtraLight = FontWeight.w200;
-const fontWeightLight = FontWeight.w300;
-const fontWeightRegular = FontWeight.w400;
-const fontWeightMedium = FontWeight.w500;
-const fontWeightSemiBold = FontWeight.w600;
-const fontWeightBold = FontWeight.w700;
-const fontWeightExtraBold = FontWeight.w800;
+//Local Camera View
+const horizontalWidth = 110.0;
+const verticalLength = 139.0;
 
+// Font Weight Constant
+const fontWeightRegular = FontWeight.w400;
+
+//To Get Dynamic Screen Size
 void getScreenSize(BuildContext context) {
   screenSize = MediaQuery.of(context).size;
 }

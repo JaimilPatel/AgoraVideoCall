@@ -30,10 +30,10 @@ class VideoCallingScreen extends StatefulWidget {
 
   VideoCallingScreen(
       {this.channelName,
-        this.token,
-        this.resCallRequestModel,
-        this.resCallAcceptModel,
-        this.isForOutGoing});
+      this.token,
+      this.resCallRequestModel,
+      this.resCallAcceptModel,
+      this.isForOutGoing});
 
   @override
   _VideoCallingScreenState createState() => _VideoCallingScreenState();
@@ -45,17 +45,16 @@ class _VideoCallingScreenState extends State<VideoCallingScreen> {
   bool _switch = false;
   final _infoStrings = <String>[];
   RtcEngine _engine;
-  bool isCountDownVisible = false;
-  bool isFront = false;
-  bool reConnectingRemoteView = false;
+  bool _isFront = false;
+  bool _reConnectingRemoteView = false;
   final GlobalKey<TimerViewState> _timerKey = GlobalKey();
-  bool mutedAudio = false;
-  bool mutedVideo = false;
+  bool _mutedAudio = false;
+  bool _mutedVideo = false;
 
   @override
   void initState() {
     super.initState();
-    Wakelock.enable();
+    Wakelock.enable(); // Turn on wakelock feature till call is running
     initializeCalling();
   }
 
@@ -63,10 +62,11 @@ class _VideoCallingScreenState extends State<VideoCallingScreen> {
   void dispose() {
     _engine.leaveChannel();
     _engine.destroy();
-    Wakelock.disable();
+    Wakelock.disable(); // Turn off wakelock feature after call end
     super.dispose();
   }
 
+  //Initialize All The Setup For Agora Video Call
   Future<void> initializeCalling() async {
     if (AppConstants.agoraAppId.isEmpty) {
       setState(() {
@@ -88,33 +88,38 @@ class _VideoCallingScreenState extends State<VideoCallingScreen> {
     });
   }
 
+  //Initialize Agora RTC Engine
   Future<void> _initAgoraRtcEngine() async {
     _engine = await RtcEngine.create(AppConstants.agoraAppId);
     await _engine.enableVideo();
   }
 
+  //Switch Camera
   _onToggleCamera() {
     _engine?.switchCamera()?.then((value) {
       setState(() {
-        isFront = !isFront;
+        _isFront = !_isFront;
       });
     })?.catchError((err) {});
   }
 
+  //Audio On / Off
   void _onToggleMuteAudio() {
     setState(() {
-      mutedAudio = !mutedAudio;
+      _mutedAudio = !_mutedAudio;
     });
-    _engine.muteLocalAudioStream(mutedAudio);
+    _engine.muteLocalAudioStream(_mutedAudio);
   }
 
+  //Video On / Off
   void _onToggleMuteVideo() {
     setState(() {
-      mutedVideo = !mutedVideo;
+      _mutedVideo = !_mutedVideo;
     });
-    _engine.muteLocalVideoStream(mutedVideo);
+    _engine.muteLocalVideoStream(_mutedVideo);
   }
 
+  //Agora Events Handler To Implement Ui/UX Based On Your Requirements
   void _addAgoraEventHandlers() {
     _engine.setEventHandler(RtcEngineEventHandler(
       error: (code) {
@@ -140,7 +145,6 @@ class _VideoCallingScreenState extends State<VideoCallingScreen> {
           final info = 'userJoined: $uid';
           _infoStrings.add(info);
           _remoteUid = uid;
-          isCountDownVisible = true;
         });
       },
       userOffline: (uid, elapsed) async {
@@ -151,7 +155,6 @@ class _VideoCallingScreenState extends State<VideoCallingScreen> {
             final info = 'userOffline: $uid';
             _infoStrings.add(info);
             _remoteUid = null;
-            isCountDownVisible = false;
             _timerKey?.currentState?.cancelTimer();
           });
         }
@@ -165,22 +168,22 @@ class _VideoCallingScreenState extends State<VideoCallingScreen> {
       connectionStateChanged: (type, reason) async {
         if (type == ConnectionStateType.Connected) {
           setState(() {
-            reConnectingRemoteView = false;
+            _reConnectingRemoteView = false;
           });
         } else if (type == ConnectionStateType.Reconnecting) {
           setState(() {
-            reConnectingRemoteView = true;
+            _reConnectingRemoteView = true;
           });
         }
       },
       remoteVideoStats: (remoteVideoStats) {
         if (remoteVideoStats.receivedBitrate == 0) {
           setState(() {
-            reConnectingRemoteView = true;
+            _reConnectingRemoteView = true;
           });
         } else {
           setState(() {
-            reConnectingRemoteView = false;
+            _reConnectingRemoteView = false;
           });
         }
       },
@@ -190,20 +193,38 @@ class _VideoCallingScreenState extends State<VideoCallingScreen> {
   // Create UI with local view and remote view
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.black,
-      body: Stack(
-        children: [
-          Center(
-            child: _switch ? _renderLocalPreview() : _renderRemoteVideo(),
-          ),
-          _timerView(),
-          _cameraView(),
-          _bottomPortionWidget(context),
-          _cancelCallView()
-        ],
+    return WillPopScope(
+      onWillPop: () {
+        _onBackPressed(context);
+      },
+      child: Scaffold(
+        backgroundColor: Colors.black,
+        body: Stack(
+          children: [
+            Center(
+              child: _switch ? _renderLocalPreview() : _renderRemoteVideo(),
+            ),
+            //_logPanelWidget(), //Uncomment It During Development To Ensure Proper Agora Setup
+            _timerView(),
+            _cameraView(),
+            _bottomPortionWidget(context),
+            _cancelCallView()
+          ],
+        ),
       ),
     );
+  }
+
+  //Get This Alert Dialog When User Press On Back Button
+  Future<bool> _onBackPressed(BuildContext context) {
+    showCallLeaveDialog(
+        context,
+        Localization.of(context).labelEndCall,
+        Localization.of(context).labelEndCallNow,
+        Localization.of(context).labelEndCallCancel, () {
+      _onCallEnd(context);
+    });
+    false;
   }
 
   // Generate local preview
@@ -233,7 +254,7 @@ class _VideoCallingScreenState extends State<VideoCallingScreen> {
           rtc_remote_view.SurfaceView(
             uid: _remoteUid,
           ),
-          reConnectingRemoteView
+          _reConnectingRemoteView
               ? Container(
                   color: Colors.black.withAlpha(200),
                   child: Center(
@@ -260,6 +281,7 @@ class _VideoCallingScreenState extends State<VideoCallingScreen> {
     }
   }
 
+  //Timer Ui
   Widget _timerView() => Positioned(
         top: 45,
         left: spacingXXXSLarge,
@@ -277,14 +299,15 @@ class _VideoCallingScreenState extends State<VideoCallingScreen> {
         ),
       );
 
+  //Local Camera View
   Widget _cameraView() => Container(
         padding: const EdgeInsets.symmetric(
             vertical: spacingXXXXLarge, horizontal: spacingLarge),
         alignment: Alignment.bottomRight,
         child: FractionallySizedBox(
           child: Container(
-            width: 110,
-            height: 139,
+            width: horizontalWidth,
+            height: verticalLength,
             alignment: Alignment.topRight,
             color: Colors.black,
             child: GestureDetector(
@@ -301,6 +324,55 @@ class _VideoCallingScreenState extends State<VideoCallingScreen> {
         ),
       );
 
+  //Only For Development Purpose (Please Comment It For Release)
+  Widget _logPanelWidget() => Container(
+        padding: const EdgeInsets.symmetric(vertical: spacingXXXSLarge),
+        alignment: Alignment.bottomCenter,
+        child: FractionallySizedBox(
+          heightFactor: 0.5,
+          child: Container(
+            padding: const EdgeInsets.symmetric(vertical: spacingXXXSLarge),
+            child: ListView.builder(
+              reverse: true,
+              itemCount: _infoStrings.length,
+              itemBuilder: (context, index) {
+                if (_infoStrings.isEmpty) {
+                  return null;
+                }
+                return Padding(
+                  padding: const EdgeInsets.symmetric(
+                    vertical: spacingTiny,
+                    horizontal: spacingSmall,
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Flexible(
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 2,
+                            horizontal: spacingTiny,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.yellowAccent,
+                            borderRadius: BorderRadius.circular(spacingTiny),
+                          ),
+                          child: Text(
+                            _infoStrings[index],
+                            style: TextStyle(color: Colors.blueGrey),
+                          ),
+                        ),
+                      )
+                    ],
+                  ),
+                );
+              },
+            ),
+          ),
+        ),
+      );
+
+  // Ui & UX For Bottom Portion (Switch Camera,Video On/Off,Mic On/Off)
   Widget _bottomPortionWidget(BuildContext context) => Container(
         margin: EdgeInsets.only(
             bottom: spacingLarge, left: spacingXXMLarge, right: spacingXLarge),
@@ -311,46 +383,49 @@ class _VideoCallingScreenState extends State<VideoCallingScreen> {
             RawMaterialButton(
               onPressed: _onToggleCamera,
               child: Icon(
-                isFront ? Icons.camera_front : Icons.camera_rear,
+                _isFront ? Icons.camera_front : Icons.camera_rear,
                 color: ColorUtils.whiteColor,
                 size: smallIconSize,
               ),
               shape: CircleBorder(),
               elevation: 2.0,
               fillColor:
-                  isFront ? Colors.white.withAlpha(100) : Colors.transparent,
+                  _isFront ? Colors.white.withAlpha(100) : Colors.transparent,
               padding: const EdgeInsets.all(spacingMedium),
             ),
             RawMaterialButton(
               onPressed: _onToggleMuteVideo,
               child: Icon(
-                mutedVideo ? Icons.videocam_off : Icons.videocam,
+                _mutedVideo ? Icons.videocam_off : Icons.videocam,
                 color: ColorUtils.whiteColor,
                 size: smallIconSize,
               ),
               shape: CircleBorder(),
               elevation: 2.0,
-              fillColor:
-                  mutedVideo ? Colors.white.withAlpha(100) : Colors.transparent,
+              fillColor: _mutedVideo
+                  ? Colors.white.withAlpha(100)
+                  : Colors.transparent,
               padding: const EdgeInsets.all(spacingMedium),
             ),
             RawMaterialButton(
               onPressed: _onToggleMuteAudio,
               child: Icon(
-                mutedAudio ? Icons.mic_off : Icons.mic,
+                _mutedAudio ? Icons.mic_off : Icons.mic,
                 color: ColorUtils.whiteColor,
                 size: smallIconSize,
               ),
               shape: CircleBorder(),
               elevation: 2.0,
-              fillColor:
-                  mutedAudio ? Colors.white.withAlpha(100) : Colors.transparent,
+              fillColor: _mutedAudio
+                  ? Colors.white.withAlpha(100)
+                  : Colors.transparent,
               padding: const EdgeInsets.all(spacingMedium),
             ),
           ],
         ),
       );
 
+  //Cancel Button Ui/Ux
   Widget _cancelCallView() => Align(
         alignment: Alignment.topRight,
         child: Padding(
@@ -369,23 +444,26 @@ class _VideoCallingScreenState extends State<VideoCallingScreen> {
             child: Icon(
               Icons.cancel,
               color: ColorUtils.whiteColor,
-              size: 30,
+              size: imageMTiny,
             ),
           ),
         ),
       );
 
+  //Use This Method To End Call
   void _onCallEnd(BuildContext context) async {
-    Wakelock.disable();
-      emit(
-          SocketConstants.rejectCall,
-          ({
-            ArgParams.connectId:  widget.isForOutGoing
-                ? widget.resCallAcceptModel.id
-                : widget.resCallRequestModel.id,
-          }));
-      NavigationUtils.pushAndRemoveUntil(
-          context, RouteConstants.routeCommon,
-       );
+    Wakelock.disable(); // Turn off wakelock feature after call end
+    //Emit Reject Call Event Into Socket
+    emit(
+        SocketConstants.rejectCall,
+        ({
+          ArgParams.connectId: widget.isForOutGoing
+              ? widget.resCallAcceptModel.otherUserId
+              : widget.resCallRequestModel.id,
+        }));
+    NavigationUtils.pushAndRemoveUntil(
+      context,
+      RouteConstants.routeCommon,
+    );
   }
 }

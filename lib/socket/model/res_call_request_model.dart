@@ -3,13 +3,10 @@ class ResCallRequestModel {
   String channel;
   String token;
 
-  ResCallRequestModel(
-      {this.id,
-      this.channel,
-      this.token});
+  ResCallRequestModel({this.id, this.channel, this.token});
 
   ResCallRequestModel.fromJson(Map<String, dynamic> json) {
-    id = json['id'];
+    id = int.parse(json['id']);
     channel = json['channel'];
     token = json['token'];
   }

@@ -1,4 +1,3 @@
-import 'package:agoravideocall/ui/call/video_call_screen.dart';
 import 'package:agoravideocall/ui/common/common_screen.dart';
 import 'package:flutter/material.dart';
 
@@ -7,6 +6,7 @@ Widget navigationToNextScreen() {
   return CommonScreen();
 }
 
+//Get Formated Duration
 String getFormatDuration(Duration duration) {
   String twoDigits(int n) => n.toString().padLeft(2, "0");
   var twoDigitMinutes = twoDigits(duration.inMinutes.remainder(60));
