@@ -31,4 +31,5 @@
 <img src="https://cdn-images-1.medium.com/max/880/1*IMDFmjbUBs8cbqesoAYP_A.gif" width="200" height="400" />
 <img src="https://user-images.githubusercontent.com/52445432/116004325-d7d21b00-a61f-11eb-8d83-88d9d9d88926.gif" width="200" height="400" />
  </p>
-For more info : jaimil.dev8819@gmail.com
+ 
+ For more info : jaimil.dev8819@gmail.com
