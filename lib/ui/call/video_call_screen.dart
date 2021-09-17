@@ -81,7 +81,7 @@ class _VideoCallingScreenState extends State<VideoCallingScreen> {
       await _initAgoraRtcEngine();
       _addAgoraEventHandlers();
       var configuration = VideoEncoderConfiguration();
-      configuration.dimensions = VideoDimensions(1920, 1080);
+      configuration.dimensions = VideoDimensions(width: 1920, height: 1080);
       configuration.orientationMode = VideoOutputOrientationMode.Adaptative;
       await _engine.setVideoEncoderConfiguration(configuration);
       await _engine.joinChannel(widget.token, widget.channelName, null, 0);
