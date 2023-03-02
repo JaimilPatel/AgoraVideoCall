@@ -12,7 +12,6 @@ import 'package:agoravideocall/utils/constants/route_constants.dart';
 import 'package:agoravideocall/utils/dimens.dart';
 import 'package:agoravideocall/utils/localization/localization.dart';
 import 'package:agoravideocall/utils/navigation.dart';
-import 'package:agoravideocall/utils/permission_utils.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
@@ -21,8 +20,8 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:wakelock/wakelock.dart';
 
 class PickUpScreen extends StatefulWidget {
-  final ResCallRequestModel resCallRequestModel;
-  final ResCallAcceptModel resCallAcceptModel;
+  final ResCallRequestModel? resCallRequestModel;
+  final ResCallAcceptModel? resCallAcceptModel;
   final bool isForOutGoing;
   PickUpScreen(
       {this.resCallRequestModel,
@@ -33,7 +32,7 @@ class PickUpScreen extends StatefulWidget {
 }
 
 class _PickUpScreenState extends State<PickUpScreen> {
-  Timer _timer;
+  Timer? _timer;
 
   @override
   void initState() {
@@ -76,8 +75,8 @@ class _PickUpScreenState extends State<PickUpScreen> {
           children: <Widget>[
             Text(
               widget.isForOutGoing
-                  ? Localization.of(context).outGoingCallTitle
-                  : Localization.of(context).pickUpCallTitle,
+                  ? Localization.of(context)!.outGoingCallTitle
+                  : Localization.of(context)!.pickUpCallTitle,
               style: TextStyle(
                   color: ColorUtils.whiteColor,
                   fontSize: headerTitleSize,
@@ -86,7 +85,7 @@ class _PickUpScreenState extends State<PickUpScreen> {
             SizedBox(height: spacingXXXSLarge),
             _getImageUrlWidget(),
             SizedBox(height: spacingLarge),
-            Text(Localization.of(context).pickupScreenUserName,
+            Text(Localization.of(context)!.pickupScreenUserName,
                 style: TextStyle(
                     color: ColorUtils.whiteColor,
                     fontSize: headerTitleSize,
@@ -111,7 +110,7 @@ class _PickUpScreenState extends State<PickUpScreen> {
   _getImageUrlWidget() => ClipOval(
           child: CircleAvatar(
         backgroundColor: ColorUtils.whiteColor,
-        radius: screenSize.width * 0.2,
+        radius: screenSize!.width * 0.2,
         child: CachedNetworkImage(
             fit: BoxFit.cover,
             width: imageXLarge,
@@ -150,30 +149,31 @@ class _PickUpScreenState extends State<PickUpScreen> {
       padding: const EdgeInsets.all(spacingMedium));
 
   //Call This Method When User Pressed On Accept Call Button
-  void pickUpCallPressed(BuildContext context) {
-    PermissionUtils.requestPermission(
-        [PermissionGroup.camera, PermissionGroup.microphone], context,
-        isOpenSettings: true, permissionGrant: () async {
-      FlutterRingtonePlayer.stop();
-      if (await checkNetworkConnection(context)) {
-        //Emit Accept Call Event Into Socket
-        emit(
-            SocketConstants.acceptCall,
-            ({
-              ArgParams.connectId: widget.resCallRequestModel.id,
-              ArgParams.channelKey: widget.resCallRequestModel.channel,
-              ArgParams.channelTokenKey: widget.resCallRequestModel.token,
-            }));
-        NavigationUtils.pushReplacement(context, RouteConstants.routeVideoCall,
-            arguments: {
-              ArgParams.channelKey: widget.resCallRequestModel.channel,
-              ArgParams.channelTokenKey: widget.resCallRequestModel.token,
-              ArgParams.resCallRequestModel: widget.resCallRequestModel,
-              ArgParams.resCallAcceptModel: ResCallAcceptModel(),
-              ArgParams.isForOutGoing: widget.isForOutGoing,
-            });
+  void pickUpCallPressed(BuildContext context) async {
+    if (await Permission.camera.request().isGranted) {
+      if (await Permission.microphone.request().isGranted) {
+        FlutterRingtonePlayer.stop();
+        if (await checkNetworkConnection(context)) {
+          //Emit Accept Call Event Into Socket
+          emit(
+              SocketConstants.acceptCall,
+              ({
+                ArgParams.connectId: widget.resCallRequestModel?.id,
+                ArgParams.channelKey: widget.resCallRequestModel?.channel,
+                ArgParams.channelTokenKey: widget.resCallRequestModel?.token,
+              }));
+          NavigationUtils.pushReplacement(
+              context, RouteConstants.routeVideoCall,
+              arguments: {
+                ArgParams.channelKey: widget.resCallRequestModel?.channel,
+                ArgParams.channelTokenKey: widget.resCallRequestModel?.token,
+                ArgParams.resCallRequestModel: widget.resCallRequestModel,
+                ArgParams.resCallAcceptModel: ResCallAcceptModel(),
+                ArgParams.isForOutGoing: widget.isForOutGoing,
+              });
+        }
       }
-    });
+    }
   }
 
   //Call This Method When User Pressed On Reject Call Button
@@ -185,8 +185,8 @@ class _PickUpScreenState extends State<PickUpScreen> {
         SocketConstants.rejectCall,
         ({
           ArgParams.connectId: widget.isForOutGoing
-              ? widget.resCallAcceptModel.otherUserId
-              : widget.resCallRequestModel.id,
+              ? widget.resCallAcceptModel?.otherUserId
+              : widget.resCallRequestModel?.id,
         }));
     NavigationUtils.pop(context);
   }

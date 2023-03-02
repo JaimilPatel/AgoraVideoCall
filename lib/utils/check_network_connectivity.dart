@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:agoravideocall/utils/constants/app_constants.dart';
-import 'package:connectivity/connectivity.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -10,14 +10,14 @@ import 'localization/localization.dart';
 
 //Check Connectivity With Network
 final Connectivity _connectivity = Connectivity();
-String _connectionStatus;
+String? _connectionStatus;
 Future<bool> checkNetworkConnection(BuildContext context) async {
   String connectionStatus;
 
   try {
     connectionStatus = (await _connectivity.checkConnectivity()).toString();
   } on PlatformException catch (_) {
-    connectionStatus = Localization.of(context).internetConnectionFailed;
+    connectionStatus = Localization.of(context)!.internetConnectionFailed;
   }
 
   _connectionStatus = connectionStatus;
@@ -26,7 +26,7 @@ Future<bool> checkNetworkConnection(BuildContext context) async {
     return true;
   } else {
     DialogUtils.showAlertDialog(
-        context, Localization.of(context).internetNotConnected);
+        context, Localization.of(context)!.internetNotConnected);
     return false;
   }
 }

@@ -4,22 +4,22 @@ description: Video Calling Integration Using Socket and Agora IO In Flutter.
 version: 1.0.0+1
 
 environment:
-  sdk: ">=2.7.0 <3.0.0"
+  sdk: '>=2.19.2 <3.0.0'
 
 dependencies:
   flutter:
     sdk: flutter
-  cupertino_icons: ^1.0.3
-  agora_rtc_engine: ^4.0.7
-  permission_handler: ^4.3.0
-  intl: ^0.17.0
-  cached_network_image: ^3.1.0
-  flutter_svg: ^0.22.0
-  connectivity: ^3.0.6
-  flutter_ringtone_player: ^3.0.0
-  wakelock: ^0.5.6
-  socket_io_client: ^1.0.1
-  uuid: ^3.0.4
+  cupertino_icons: ^1.0.5
+  agora_rtc_engine: ^6.1.0
+  permission_handler: ^10.2.0
+  intl: ^0.18.0
+  cached_network_image: ^3.2.3
+  flutter_svg: ^2.0.2
+  connectivity_plus: ^3.0.3
+  flutter_ringtone_player: ^3.2.0
+  wakelock: ^0.6.2
+  socket_io_client: ^2.0.1
+  uuid: ^3.0.7
 
 dev_dependencies:
   flutter_test:

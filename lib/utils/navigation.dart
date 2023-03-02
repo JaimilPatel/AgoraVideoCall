@@ -10,12 +10,12 @@ import 'constants/route_constants.dart';
 
 class NavigationUtils {
   static Route<dynamic> generateRoute(RouteSettings settings) {
-    Map<String, dynamic> args = settings.arguments;
+    Map<String, dynamic>? args = settings.arguments as Map<String, dynamic>?;
     switch (settings.name) {
       case RouteConstants.routeCommon:
         return MaterialPageRoute(builder: (_) => CommonScreen());
       case RouteConstants.routePickUpScreen:
-        ResCallRequestModel reqModel = args[ArgParams.resCallRequestModel];
+        ResCallRequestModel reqModel = args![ArgParams.resCallRequestModel];
         ResCallAcceptModel joinModel = args[ArgParams.resCallAcceptModel];
         bool isForOutGoing = args[ArgParams.isForOutGoing];
         return MaterialPageRoute(
@@ -24,7 +24,7 @@ class NavigationUtils {
                 resCallAcceptModel: joinModel,
                 isForOutGoing: isForOutGoing));
       case RouteConstants.routeVideoCall:
-        String name = args[ArgParams.channelKey];
+        String name = args![ArgParams.channelKey];
         String token = args[ArgParams.channelTokenKey];
         ResCallRequestModel reqModel = args[ArgParams.resCallRequestModel];
         ResCallAcceptModel joinModel = args[ArgParams.resCallAcceptModel];
@@ -51,12 +51,12 @@ class NavigationUtils {
   }
 
   static void pushReplacement(BuildContext context, String routeName,
-      {Object arguments}) {
+      {Object? arguments}) {
     Navigator.of(context).pushReplacementNamed(routeName, arguments: arguments);
   }
 
   static Future<dynamic> push(BuildContext context, String routeName,
-      {Object arguments}) {
+      {Object? arguments}) {
     return Navigator.of(context).pushNamed(routeName, arguments: arguments);
   }
 
@@ -66,7 +66,7 @@ class NavigationUtils {
 
   static Future<dynamic> pushAndRemoveUntil(
       BuildContext context, String routeName,
-      {Object arguments}) {
+      {Object? arguments}) {
     return Navigator.of(context).pushNamedAndRemoveUntil(
         routeName, (route) => false,
         arguments: arguments);

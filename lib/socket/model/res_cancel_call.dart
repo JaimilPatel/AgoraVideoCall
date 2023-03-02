@@ -1,8 +1,8 @@
 class ResCancelCall {
-  String msg;
-  String role;
-  int hotLinkId;
-  bool isCallAccepted;
+  String? msg;
+  String? role;
+  int? hotLinkId;
+  bool? isCallAccepted;
 
   ResCancelCall({this.msg, this.role, this.hotLinkId, this.isCallAccepted});
 

@@ -8,7 +8,6 @@ import 'package:agoravideocall/utils/constants/route_constants.dart';
 import 'package:agoravideocall/utils/dimens.dart';
 import 'package:agoravideocall/utils/localization/localization.dart';
 import 'package:agoravideocall/utils/navigation.dart';
-import 'package:agoravideocall/utils/permission_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -31,33 +30,32 @@ class _CommonScreenState extends State<CommonScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(Localization.of(context).appBarLabel),
+        title: Text(Localization.of(context)!.appBarLabel),
         centerTitle: true,
         backgroundColor: ColorUtils.accentColor,
       ),
       body: Center(
-        child: RaisedButton(
-          color: ColorUtils.accentColor,
-          child: Text(Localization.of(context).primaryBtnLabel,
+        child: ElevatedButton(
+          child: Text(Localization.of(context)!.primaryBtnLabel,
               style: TextStyle(
                   color: ColorUtils.whiteColor, fontSize: buttonLabelFontSize)),
-          onPressed: () {
-            PermissionUtils.requestPermission(
-                [PermissionGroup.camera, PermissionGroup.microphone], context,
-                isOpenSettings: true, permissionGrant: () async {
-              emit(
-                  SocketConstants.connectCall,
-                  ({
-                    ArgParams.connectId: 2, //Receiver Id
-                  }));
-              NavigationUtils.push(context, RouteConstants.routePickUpScreen,
-                  arguments: {
-                    ArgParams.resCallAcceptModel:
-                        ResCallAcceptModel(otherUserId: 2), //Receiver Id
-                    ArgParams.resCallRequestModel: ResCallRequestModel(),
-                    ArgParams.isForOutGoing: true,
-                  });
-            });
+          onPressed: () async {
+            if (await Permission.camera.request().isGranted) {
+              if (await Permission.microphone.request().isGranted) {
+                emit(
+                    SocketConstants.connectCall,
+                    ({
+                      ArgParams.connectId: 2, //Receiver Id
+                    }));
+                NavigationUtils.push(context, RouteConstants.routePickUpScreen,
+                    arguments: {
+                      ArgParams.resCallAcceptModel:
+                          ResCallAcceptModel(otherUserId: 2), //Receiver Id
+                      ArgParams.resCallRequestModel: ResCallRequestModel(),
+                      ArgParams.isForOutGoing: true,
+                    });
+              }
+            }
           },
         ),
       ),

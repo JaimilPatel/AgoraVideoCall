@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 //Screen Dimensions
-Size screenSize;
+Size? screenSize;
 
 // Spacing Constant
 const spacingTiny = 5.0;

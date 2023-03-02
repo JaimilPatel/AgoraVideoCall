@@ -1,8 +1,6 @@
 import 'dart:async';
 
-import 'package:agora_rtc_engine/rtc_engine.dart';
-import 'package:agora_rtc_engine/rtc_local_view.dart' as rtc_local_view;
-import 'package:agora_rtc_engine/rtc_remote_view.dart' as rtc_remote_view;
+import 'package:agora_rtc_engine/agora_rtc_engine.dart';
 import 'package:agoravideocall/socket/model/res_call_accept_model.dart';
 import 'package:agoravideocall/socket/model/res_call_request_model.dart';
 import 'package:agoravideocall/socket/socket_constants.dart';
@@ -22,11 +20,11 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:wakelock/wakelock.dart';
 
 class VideoCallingScreen extends StatefulWidget {
-  final String channelName;
-  final String token;
-  final ResCallRequestModel resCallRequestModel;
-  final ResCallAcceptModel resCallAcceptModel;
-  final bool isForOutGoing;
+  final String? channelName;
+  final String? token;
+  final ResCallRequestModel? resCallRequestModel;
+  final ResCallAcceptModel? resCallAcceptModel;
+  final bool? isForOutGoing;
 
   VideoCallingScreen(
       {this.channelName,
@@ -41,10 +39,10 @@ class VideoCallingScreen extends StatefulWidget {
 
 class _VideoCallingScreenState extends State<VideoCallingScreen> {
   bool _joined = false;
-  int _remoteUid;
+  int? _remoteUid;
   bool _switch = false;
   final _infoStrings = <String>[];
-  RtcEngine _engine;
+  RtcEngine? _engine;
   bool _isFront = false;
   bool _reConnectingRemoteView = false;
   final GlobalKey<TimerViewState> _timerKey = GlobalKey();
@@ -60,8 +58,7 @@ class _VideoCallingScreenState extends State<VideoCallingScreen> {
 
   @override
   void dispose() {
-    _engine.leaveChannel();
-    _engine.destroy();
+    _engine?.leaveChannel();
     Wakelock.disable(); // Turn off wakelock feature after call end
     super.dispose();
   }
@@ -80,27 +77,37 @@ class _VideoCallingScreenState extends State<VideoCallingScreen> {
     Future.delayed(Duration.zero, () async {
       await _initAgoraRtcEngine();
       _addAgoraEventHandlers();
-      var configuration = VideoEncoderConfiguration();
-      configuration.dimensions = VideoDimensions(width: 1920, height: 1080);
-      configuration.orientationMode = VideoOutputOrientationMode.Adaptative;
-      await _engine.setVideoEncoderConfiguration(configuration);
-      await _engine.joinChannel(widget.token, widget.channelName, null, 0);
+      var configuration = VideoEncoderConfiguration(
+          dimensions: VideoDimensions(
+            width: 1920,
+            height: 1080,
+          ),
+          orientationMode: OrientationMode.orientationModeAdaptive);
+      await _engine?.setVideoEncoderConfiguration(configuration);
+      await _engine?.joinChannel(
+          token: widget.token ?? "",
+          channelId: widget.channelName ?? "",
+          uid: 0,
+          options: ChannelMediaOptions());
     });
   }
 
   //Initialize Agora RTC Engine
   Future<void> _initAgoraRtcEngine() async {
-    _engine = await RtcEngine.create(AppConstants.agoraAppId);
-    await _engine.enableVideo();
+    _engine = createAgoraRtcEngine();
+    await _engine?.initialize(const RtcEngineContext(
+        appId: AppConstants.agoraAppId,
+        channelProfile: ChannelProfileType.channelProfileCommunication));
+    await _engine?.enableVideo();
   }
 
   //Switch Camera
   _onToggleCamera() {
-    _engine?.switchCamera()?.then((value) {
+    _engine?.switchCamera().then((value) {
       setState(() {
         _isFront = !_isFront;
       });
-    })?.catchError((err) {});
+    }).catchError((err) {});
   }
 
   //Audio On / Off
@@ -108,7 +115,7 @@ class _VideoCallingScreenState extends State<VideoCallingScreen> {
     setState(() {
       _mutedAudio = !_mutedAudio;
     });
-    _engine.muteLocalAudioStream(_mutedAudio);
+    _engine?.muteLocalAudioStream(_mutedAudio);
   }
 
   //Video On / Off
@@ -116,68 +123,73 @@ class _VideoCallingScreenState extends State<VideoCallingScreen> {
     setState(() {
       _mutedVideo = !_mutedVideo;
     });
-    _engine.muteLocalVideoStream(_mutedVideo);
+    _engine?.muteLocalVideoStream(_mutedVideo);
   }
 
   //Agora Events Handler To Implement Ui/UX Based On Your Requirements
   void _addAgoraEventHandlers() {
-    _engine.setEventHandler(RtcEngineEventHandler(
-      error: (code) {
+    _engine?.registerEventHandler(RtcEngineEventHandler(
+      onJoinChannelSuccess: (RtcConnection connection, int elapsed) {
+        setState(() {
+          _joined = true;
+          final info =
+              'onJoinChannel: ${connection.channelId}, uid:  ${connection.localUid}';
+          _infoStrings.add(info);
+        });
+      },
+      onUserJoined: (RtcConnection connection, int remoteUid, int elapsed) {
+        setState(() {
+          final info = 'userJoined: $remoteUid';
+          _infoStrings.add(info);
+          _remoteUid = remoteUid;
+        });
+      },
+      onUserOffline: (RtcConnection connection, int remoteUid,
+          UserOfflineReasonType reason) {
+        if (reason == UserOfflineReasonType.userOfflineDropped) {
+          Wakelock.disable();
+        } else {
+          setState(() {
+            final info = 'userOffline: $remoteUid';
+            _infoStrings.add(info);
+            _remoteUid = null;
+            _timerKey.currentState?.cancelTimer();
+          });
+        }
+      },
+      onError: (ErrorCodeType code, String str) {
         setState(() {
           final info = 'onError:$code ${code.index}';
           _infoStrings.add(info);
         });
       },
-      joinChannelSuccess: (channel, uid, elapsed) {
-        setState(() {
-          _joined = true;
-          final info = 'onJoinChannel: $channel, uid: $uid';
-          _infoStrings.add(info);
-        });
-      },
-      leaveChannel: (stats) {
+      onLeaveChannel: (RtcConnection connection, RtcStats stats) {
         setState(() {
           _infoStrings.add('onLeaveChannel');
         });
       },
-      userJoined: (uid, elapsed) {
+      onFirstRemoteAudioFrame:
+          (RtcConnection connection, int width, int height) {
         setState(() {
-          final info = 'userJoined: $uid';
-          _infoStrings.add(info);
-          _remoteUid = uid;
-        });
-      },
-      userOffline: (uid, elapsed) async {
-        if (elapsed == UserOfflineReason.Dropped) {
-          Wakelock.disable();
-        } else {
-          setState(() {
-            final info = 'userOffline: $uid';
-            _infoStrings.add(info);
-            _remoteUid = null;
-            _timerKey?.currentState?.cancelTimer();
-          });
-        }
-      },
-      firstRemoteVideoFrame: (uid, width, height, elapsed) {
-        setState(() {
-          final info = 'firstRemoteVideo: $uid ${width}x $height';
+          final info =
+              'firstRemoteVideo: ${connection.localUid} ${width}x $height';
           _infoStrings.add(info);
         });
       },
-      connectionStateChanged: (type, reason) async {
-        if (type == ConnectionStateType.Connected) {
+      onConnectionStateChanged: (RtcConnection connection,
+          ConnectionStateType type, ConnectionChangedReasonType reason) {
+        if (type == ConnectionStateType.connectionStateConnected) {
           setState(() {
             _reConnectingRemoteView = false;
           });
-        } else if (type == ConnectionStateType.Reconnecting) {
+        } else if (type == ConnectionStateType.connectionStateReconnecting) {
           setState(() {
             _reConnectingRemoteView = true;
           });
         }
       },
-      remoteVideoStats: (remoteVideoStats) {
-        if (remoteVideoStats.receivedBitrate == 0) {
+      onRemoteVideoStats: (RtcConnection connection, RemoteVideoStats stats) {
+        if (stats.receivedBitrate == 0) {
           setState(() {
             _reConnectingRemoteView = true;
           });
@@ -186,6 +198,10 @@ class _VideoCallingScreenState extends State<VideoCallingScreen> {
             _reConnectingRemoteView = false;
           });
         }
+      },
+      onTokenPrivilegeWillExpire: (RtcConnection connection, String token) {
+        debugPrint(
+            '[onTokenPrivilegeWillExpire] connection: ${connection.toJson()}, token: $token');
       },
     ));
   }
@@ -195,7 +211,7 @@ class _VideoCallingScreenState extends State<VideoCallingScreen> {
   Widget build(BuildContext context) {
     return WillPopScope(
       onWillPop: () {
-        _onBackPressed(context);
+        return _onBackPressed(context)!;
       },
       child: Scaffold(
         backgroundColor: Colors.black,
@@ -216,26 +232,31 @@ class _VideoCallingScreenState extends State<VideoCallingScreen> {
   }
 
   //Get This Alert Dialog When User Press On Back Button
-  Future<bool> _onBackPressed(BuildContext context) {
+  Future<bool>? _onBackPressed(BuildContext context) {
     showCallLeaveDialog(
         context,
-        Localization.of(context).labelEndCall,
-        Localization.of(context).labelEndCallNow,
-        Localization.of(context).labelEndCallCancel, () {
+        Localization.of(context)!.labelEndCall,
+        Localization.of(context)!.labelEndCallNow,
+        Localization.of(context)!.labelEndCallCancel, () {
       _onCallEnd(context);
     });
-    false;
+    return Future.value(false);
   }
 
   // Generate local preview
   Widget _renderLocalPreview() {
     if (_joined) {
-      return rtc_local_view.SurfaceView();
+      return AgoraVideoView(
+        controller: VideoViewController(
+          rtcEngine: _engine!,
+          canvas: const VideoCanvas(uid: 0),
+        ),
+      );
     } else {
       return Padding(
         padding: const EdgeInsets.all(spacingXSmall),
         child: Text(
-          Localization.of(context).waitForJoiningLabel,
+          Localization.of(context)!.waitForJoiningLabel,
           textAlign: TextAlign.center,
           style: TextStyle(
               fontSize: tabBarTitle,
@@ -251,15 +272,19 @@ class _VideoCallingScreenState extends State<VideoCallingScreen> {
     if (_remoteUid != null) {
       return Stack(
         children: [
-          rtc_remote_view.SurfaceView(
-            uid: _remoteUid,
+          AgoraVideoView(
+            controller: VideoViewController.remote(
+              rtcEngine: _engine!,
+              canvas: VideoCanvas(uid: _remoteUid),
+              connection: RtcConnection(channelId: widget.channelName),
+            ),
           ),
           _reConnectingRemoteView
               ? Container(
                   color: Colors.black.withAlpha(200),
                   child: Center(
                       child: Text(
-                    "${Localization.of(context).reConnecting}",
+                    "${Localization.of(context)!.reConnecting}",
                     style: TextStyle(
                         color: ColorUtils.whiteColor, fontSize: labelFontSize),
                   )))
@@ -270,7 +295,7 @@ class _VideoCallingScreenState extends State<VideoCallingScreen> {
       return Padding(
         padding: const EdgeInsets.all(spacingXSmall),
         child: Text(
-          Localization.of(context).waitForJoiningLabel,
+          Localization.of(context)!.waitForJoiningLabel,
           textAlign: TextAlign.center,
           style: TextStyle(
               fontSize: tabBarTitle,
@@ -435,9 +460,9 @@ class _VideoCallingScreenState extends State<VideoCallingScreen> {
             onTap: () {
               showCallLeaveDialog(
                   context,
-                  Localization.of(context).labelEndCall,
-                  Localization.of(context).labelEndCallNow,
-                  Localization.of(context).labelEndCallCancel, () {
+                  Localization.of(context)!.labelEndCall,
+                  Localization.of(context)!.labelEndCallNow,
+                  Localization.of(context)!.labelEndCallCancel, () {
                 _onCallEnd(context);
               });
             },
@@ -457,9 +482,10 @@ class _VideoCallingScreenState extends State<VideoCallingScreen> {
     emit(
         SocketConstants.rejectCall,
         ({
-          ArgParams.connectId: widget.isForOutGoing
-              ? widget.resCallAcceptModel.otherUserId
-              : widget.resCallRequestModel.id,
+          ArgParams.connectId:
+              widget.isForOutGoing != null && widget.isForOutGoing == true
+                  ? widget.resCallAcceptModel?.otherUserId
+                  : widget.resCallRequestModel?.id,
         }));
     NavigationUtils.pushAndRemoveUntil(
       context,

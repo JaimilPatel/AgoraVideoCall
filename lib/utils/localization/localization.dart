@@ -18,9 +18,9 @@ class MyLocalizationsDelegate extends LocalizationsDelegate<Localization> {
 
   static Future<Localization> _load(Locale locale) async {
     final String name =
-        (locale.countryCode == null || locale.countryCode.isEmpty)
+        (locale.countryCode == null || locale.countryCode!.isEmpty)
             ? locale.languageCode
-            : locale;
+            : locale as String;
 
     final localeName = Intl.canonicalizedLocale(name);
     Intl.defaultLocale = localeName;
@@ -33,7 +33,7 @@ class MyLocalizationsDelegate extends LocalizationsDelegate<Localization> {
 }
 
 abstract class Localization {
-  static Localization of(BuildContext context) {
+  static Localization? of(BuildContext context) {
     return Localizations.of<Localization>(context, Localization);
   }
 

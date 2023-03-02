@@ -1,7 +1,7 @@
 class ResOnCallConnectModel {
-  String channel;
-  String token;
-  int id;
+  String? channel;
+  String? token;
+  int? id;
 
   ResOnCallConnectModel({this.channel, this.token, this.id});
 

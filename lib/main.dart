@@ -39,7 +39,7 @@ class AgoraVideoCall extends StatelessWidget {
       ),
       builder: (context, child) {
         return MediaQuery(
-          child: child,
+          child: child!,
           data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0),
         );
       },

@@ -1,7 +1,7 @@
 class ResCallRequestModel {
-  int id;
-  String channel;
-  String token;
+  int? id;
+  String? channel;
+  String? token;
 
   ResCallRequestModel({this.id, this.channel, this.token});
 

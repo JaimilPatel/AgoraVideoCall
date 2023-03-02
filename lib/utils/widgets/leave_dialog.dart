@@ -7,10 +7,10 @@ import '../../utils/dimens.dart';
 import '../../utils/navigation.dart';
 
 class LeaveDialog extends StatefulWidget {
-  final String title;
-  final String yesText;
-  final String noText;
-  final Function onYesAction;
+  final String? title;
+  final String? yesText;
+  final String? noText;
+  final Function? onYesAction;
 
   LeaveDialog(
       {@required this.title,
@@ -53,7 +53,7 @@ class _LeaveDialogState extends State<LeaveDialog> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: <Widget>[
                         Text(
-                          widget.title,
+                          widget.title ?? "",
                           style: TextStyle(
                               color: ColorUtils.primaryColor,
                               fontSize: buttonLabelFontSize),
@@ -62,28 +62,26 @@ class _LeaveDialogState extends State<LeaveDialog> {
                         SizedBox(
                           height: spacingXXLarge,
                         ),
-                        RaisedButton(
-                            color: ColorUtils.accentColor,
+                        ElevatedButton(
                             onPressed: () {
                               dismissAlertDialog(context);
 
                               if (widget.onYesAction != null) {
-                                widget.onYesAction();
+                                widget.onYesAction!();
                               }
                             },
                             child: Text(
-                              widget.yesText,
+                              widget.yesText ?? "",
                               style: TextStyle(color: ColorUtils.whiteColor),
                             )),
                         SizedBox(
                           height: spacingLarge,
                         ),
-                        RaisedButton(
-                          color: ColorUtils.cancelLeaveDialogButtonColor,
+                        ElevatedButton(
                           onPressed: () {
                             dismissAlertDialog(context);
                           },
-                          child: Text(widget.noText),
+                          child: Text(widget.noText ?? ""),
                         ),
                       ],
                     ),

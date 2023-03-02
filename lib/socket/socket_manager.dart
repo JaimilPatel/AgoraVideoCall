@@ -12,11 +12,11 @@ import 'model/res_call_accept_model.dart';
 import 'model/res_call_request_model.dart';
 import 'socket_constants.dart';
 
-io.Socket _socketInstance;
-BuildContext buildContext;
-String channelName;
-String channelToken;
-ResCallAcceptModel resCallAcceptModel;
+io.Socket? _socketInstance;
+BuildContext? buildContext;
+String? channelName;
+String? channelToken;
+ResCallAcceptModel? resCallAcceptModel;
 
 //Initialize Socket Connection
 dynamic initSocketManager(BuildContext context) {
@@ -31,7 +31,7 @@ dynamic initSocketManager(BuildContext context) {
       ],
     },
   );
-  _socketInstance.connect();
+  _socketInstance?.connect();
   socketGlobalListeners();
 }
 
@@ -47,7 +47,7 @@ dynamic socketGlobalListeners() {
 }
 
 //To Emit Event Into Socket
-bool emit(String event, Map<String, dynamic> data) {
+bool? emit(String event, Map<String, dynamic> data) {
   ConsoleLogUtils.printLog("===> emit $data");
   _socketInstance?.emit(event, jsonDecode(json.encode(data)));
   return _socketInstance?.connected;
@@ -73,7 +73,7 @@ dynamic onConnectError(error) {
 void handleOnCallRequest(dynamic response) {
   if (response != null) {
     final data = ResCallRequestModel.fromJson(response);
-    NavigationUtils.push(buildContext, RouteConstants.routePickUpScreen,
+    NavigationUtils.push(buildContext!, RouteConstants.routePickUpScreen,
         arguments: {
           ArgParams.resCallAcceptModel: ResCallAcceptModel(),
           ArgParams.resCallRequestModel: data,
@@ -89,7 +89,8 @@ void handleOnAcceptCall(dynamic response) async {
     resCallAcceptModel = data;
     channelName = data.channel;
     channelToken = data.token;
-    NavigationUtils.pushReplacement(buildContext, RouteConstants.routeVideoCall,
+    NavigationUtils.pushReplacement(
+        buildContext!, RouteConstants.routeVideoCall,
         arguments: {
           ArgParams.channelKey: data.channel,
           ArgParams.channelTokenKey: data.token,
@@ -103,7 +104,7 @@ void handleOnAcceptCall(dynamic response) async {
 //Get This Event When Someone Rejects Call
 void handleOnRejectCall(dynamic response) {
   NavigationUtils.pushAndRemoveUntil(
-    buildContext,
+    buildContext!,
     RouteConstants.routeCommon,
   );
 }

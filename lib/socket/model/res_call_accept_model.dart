@@ -1,8 +1,8 @@
 class ResCallAcceptModel {
-  String channel;
-  String token;
-  int id;
-  int otherUserId;
+  String? channel;
+  String? token;
+  int? id;
+  int? otherUserId;
 
   ResCallAcceptModel({this.channel, this.token, this.id, this.otherUserId});
 

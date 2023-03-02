@@ -7,10 +7,10 @@ import '../common_methods.dart';
 import '../dimens.dart';
 
 class TimerView extends StatefulWidget {
-  final Function updateTimerStatus;
+  final Function? updateTimerStatus;
 
   TimerView({
-    Key key,
+    Key? key,
     this.updateTimerStatus,
   }) : super(key: key);
 
@@ -19,7 +19,7 @@ class TimerView extends StatefulWidget {
 }
 
 class TimerViewState extends State<TimerView> {
-  Timer _timer;
+  Timer? _timer;
   int _counter = 0 * 60;
 
   @override
@@ -30,7 +30,7 @@ class TimerViewState extends State<TimerView> {
 
   void startTimer() {
     if (_timer != null) {
-      _timer.cancel();
+      _timer?.cancel();
     }
     _timer = Timer.periodic(Duration(seconds: 1), (timer) {
       setState(() {
@@ -47,7 +47,7 @@ class TimerViewState extends State<TimerView> {
   void dispose() {
     super.dispose();
     if (_timer != null) {
-      _timer.cancel();
+      _timer?.cancel();
     }
   }
 
